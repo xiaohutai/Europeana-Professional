@@ -7,8 +7,9 @@ $baseDir = dirname($vendorDir);
 
 return array(
     $vendorDir . '/symfony/intl/Symfony/Component/Intl/Resources/stubs/functions.php',
+    $vendorDir . '/symfony/var-dumper/Symfony/Component/VarDumper/Resources/functions/dump.php',
     $vendorDir . '/swiftmailer/swiftmailer/lib/swift_required.php',
     $vendorDir . '/rossriley/validation/autoload.php',
-    $vendorDir . '/bolt/dumper/class.dumper.php',
     $vendorDir . '/rossriley/upload/autoload.php',
+    $vendorDir . '/bolt/dumper/class.dumper.php',
 );

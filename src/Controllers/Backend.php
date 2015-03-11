@@ -192,7 +192,7 @@ class Backend implements ControllerProviderInterface
         $latest = array();
         // get the 'latest' from each of the content types.
         foreach ($app['config']->get('contenttypes') as $key => $contenttype) {
-            if ($app['users']->isAllowed('contenttype:' . $key) && $contenttype['show_on_dashboard'] == true) {
+            if ($app['users']->isAllowed('contenttype:' . $key) && $contenttype['show_on_dashboard'] === true) {
                 $latest[$key] = $app['storage']->getContent($key, array('limit' => $limit, 'order' => 'datechanged DESC', 'hydrate' => false));
                 if (!empty($latest[$key])) {
                     $total += count($latest[$key]);
@@ -451,7 +451,7 @@ class Backend implements ControllerProviderInterface
         $choices = array();
         foreach ($app['config']->get('contenttypes') as $key => $cttype) {
             $namekey = 'contenttypes.' . $key . '.name.plural';
-            $name = Trans::trans($namekey, array(), 'contenttypes');
+            $name = Trans::__($namekey, array(), 'contenttypes');
             $choices[$key] = ($name == $namekey) ? $cttype['name'] : $name;
         }
         $form = $app['form.factory']
@@ -546,7 +546,7 @@ class Backend implements ControllerProviderInterface
             return Lib::redirect('dashboard');
         }
 
-        $show_contenttype = null;
+        $showContenttype = null;
 
         // Get contenttype config from $contenttypeslug
         $contenttype = $app['storage']->getContentType($contenttypeslug);
@@ -557,20 +557,20 @@ class Backend implements ControllerProviderInterface
 
             // Which related contenttype is to be shown?
             // If non is selected or selection does not exist, take the first one
-            $show_slug = $request->get('show') ? $request->get('show') : null;
-            if (!isset($relations[$show_slug])) {
+            $showSlug = $request->get('show') ? $request->get('show') : null;
+            if (!isset($relations[$showSlug])) {
                 reset($relations);
-                $show_slug = key($relations);
+                $showSlug = key($relations);
             }
 
             foreach (array_keys($relations) as $relatedslug) {
                 $relatedtype = $app['storage']->getContentType($relatedslug);
-                if ($relatedtype['slug'] == $show_slug) {
-                    $show_contenttype = $relatedtype;
+                if ($relatedtype['slug'] == $showSlug) {
+                    $showContenttype = $relatedtype;
                 }
                 $relations[$relatedslug] = array(
                     'name' => Trans::__($relatedtype['name']),
-                    'active' => ($relatedtype['slug'] == $show_slug),
+                    'active' => ($relatedtype['slug'] == $showSlug),
                 );
             }
         } else {
@@ -587,7 +587,7 @@ class Backend implements ControllerProviderInterface
          */
 
         $content = $app['storage']->getContent($contenttypeslug, array('id' => $id));
-        $related_content = $content->related($show_contenttype['slug']);
+        $relatedContent = $content->related($showContenttype['slug']);
 
         $context = array(
             'id' => $id,
@@ -595,8 +595,8 @@ class Backend implements ControllerProviderInterface
             'title' => $content['title'],
             'contenttype' => $contenttype,
             'relations' => $relations,
-            'show_contenttype' => $show_contenttype,
-            'related_content' => $related_content,
+            'show_contenttype' => $showContenttype,
+            'related_content' => $relatedContent,
         );
 
         return $app['twig']->render('relatedto/relatedto.twig', array('context' => $context));
@@ -813,19 +813,19 @@ class Backend implements ControllerProviderInterface
 
             // Add non successfull control values to request values
             // http://www.w3.org/TR/html401/interact/forms.html#h-17.13.2
-            $request_all = $request->request->all();
+            $requestAll = $request->request->all();
 
             foreach ($contenttype['fields'] as $key => $values) {
-                if (!isset($request_all[$key])) {
+                if (!isset($requestAll[$key])) {
                     switch ($values['type']) {
                         case 'select':
-                            if (isset($values['multiple']) && $values['multiple'] == true) {
-                                $request_all[$key] = array();
+                            if (isset($values['multiple']) && $values['multiple'] === true) {
+                                $requestAll[$key] = array();
                             }
                             break;
 
                         case 'checkbox':
-                            $request_all[$key] = 0;
+                            $requestAll[$key] = 0;
                             break;
                     }
                 }
@@ -833,7 +833,7 @@ class Backend implements ControllerProviderInterface
 
             // To check whether the status is allowed, we act as if a status
             // *transition* were requested.
-            $content->setFromPost($request_all, $contenttype);
+            $content->setFromPost($requestAll, $contenttype);
             $newStatus = $content['status'];
 
             // Don't try to spoof the $id..
@@ -969,14 +969,14 @@ class Backend implements ControllerProviderInterface
 
         $duplicate = $app['request']->query->get('duplicate');
         if (!empty($duplicate)) {
-            $content->setValue('id', "");
-            $content->setValue('slug', "");
-            $content->setValue('datecreated', "");
-            $content->setValue('datepublish', "");
-            $content->setValue('datedepublish', "1900-01-01 00:00:00"); // Not all DB-engines can handle a date like '0000-00-00'
-            $content->setValue('datechanged', "");
-            $content->setValue('username', "");
-            $content->setValue('ownerid', "");
+            $content->setValue('id', '');
+            $content->setValue('slug', '');
+            $content->setValue('datecreated', '');
+            $content->setValue('datepublish', '');
+            $content->setValue('datedepublish', null);
+            $content->setValue('datechanged', '');
+            $content->setValue('username', '');
+            $content->setValue('ownerid', '');
             $app['session']->getFlashBag()->set('info', Trans::__('contenttypes.generic.duplicated-finalize', array('%contenttype%' => $contenttype['slug'])));
         }
 
@@ -994,7 +994,8 @@ class Backend implements ControllerProviderInterface
             'content' => $content,
             'allowed_status' => $allowedStatuses,
             'contentowner' => $contentowner,
-            'fields' => $app['config']->fields->fields()
+            'fields' => $app['config']->fields->fields(),
+            'canUpload' => $app['users']->isAllowed('files:uploads')
         );
 
         return $app['render']->render('editcontent/editcontent.twig', array('context' => $context));
@@ -1103,7 +1104,7 @@ class Backend implements ControllerProviderInterface
     public function roles(\Bolt\Application $app)
     {
         $contenttypes = $app['config']->get('contenttypes');
-        $permissions = array('view', 'edit', 'create', 'publish', 'depublish', 'change-owner');
+        $permissions = array('view', 'edit', 'create', 'publish', 'depublish', 'change-ownership');
         $effectivePermissions = array();
         foreach ($contenttypes as $contenttype) {
             foreach ($permissions as $permission) {
@@ -1317,10 +1318,18 @@ class Backend implements ControllerProviderInterface
                     $app['session']->getFlashBag()->set('error', Trans::__('page.edit-users.message.saving-user', array('%user%' => $user['displayname'])));
                 }
 
+                $currentuser = $app['users']->getCurrentUser();
+
                 if ($firstuser) {
                     // To the dashboard, where 'login' will be triggered..
                     return Lib::redirect('dashboard');
+                } else if (($user['id'] == $currentuser['id']) && ($user['username'] != $currentuser['username'])) {
+                    // If the current user changed their own login name, the session is effectively
+                    // invalidated. If so, we must redirect to the login page with a flash message.
+                    $app['session']->getFlashBag()->set('error', Trans::__('page.edit-users.message.change-self'));
+                    return Lib::redirect('login');
                 } else {
+                    // Return to the 'Edit users' screen.
                     return Lib::redirect('users');
                 }
 
@@ -1536,6 +1545,11 @@ class Backend implements ControllerProviderInterface
             $app->abort(403, $error);
         }
 
+        $uploadview = true;
+        if (!$app['users']->isAllowed("files:uploads")) {
+            $uploadview = false;
+        }
+
         try {
             $validFolder = true;
         } catch (\Exception $e) {
@@ -1613,7 +1627,11 @@ class Backend implements ControllerProviderInterface
                 return Lib::redirect('files', array('path' => $path, 'namespace' => $namespace));
             }
 
-            $formview = $form->createView();
+            if ($uploadview === false) {
+                $formview = false;
+            } else {
+                $formview = $form->createView();
+            }
         }
 
         list($files, $folders) = $filesystem->browse($path, $app);
@@ -1730,12 +1748,10 @@ class Backend implements ControllerProviderInterface
 
         $data['contents'] = file_get_contents($filename);
 
-        $form = $app['form.factory']->createBuilder('form', $data)
-            ->add('contents', 'textarea', array(
-                'constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 10)))
-            ));
-
-        $form = $form->getForm();
+        $form = $app['form.factory']
+            ->createBuilder('form', $data)
+            ->add('contents', 'textarea')
+            ->getForm();
 
         // Check if the form was POST-ed, and valid. If so, store the user.
         if ($request->getMethod() == "POST") {

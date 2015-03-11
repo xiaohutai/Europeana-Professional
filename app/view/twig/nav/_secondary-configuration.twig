@@ -1,7 +1,7 @@
 {% set sub = [
     {
         icon: 'fa:group',
-        label: __('Users'),
+        label: __('Users & Permissions'),
         link: path('users'),
         isallowed: 'users'
     }, {
@@ -19,12 +19,7 @@
         label: __('Taxonomy'),
         link: path('fileedit', {'namespace': 'app', 'file': 'config/taxonomy.yml'}),
         isallowed: 'files:config'
-    }, {
-        icon: 'fa:sliders',
-        label: __('Permissions'),
-        link: path('fileedit', {'namespace': 'app', 'file': 'config/permissions.yml'}),
-        isallowed: 'files:config'
-    },
+    }, 
     '-',
     {
         icon: 'fa:list',
@@ -33,7 +28,7 @@
         isallowed: 'files:config'
     }, {
         icon: 'fa:random',
-        label: __('Routing setup'),
+        label: __('menu.configuration.routing'),
         link: path('fileedit', {'namespace': 'app', 'file': 'config/routing.yml'}),
         isallowed: 'files:config'
     },
@@ -50,7 +45,7 @@
         isallowed: 'clearcache'
     }, {
         icon: 'fa:archive',
-        label: __('Activity log'),
+        label: __('logs.activity-log'),
         link: path('activitylog'),
         isallowed: 'activitylog'
     }

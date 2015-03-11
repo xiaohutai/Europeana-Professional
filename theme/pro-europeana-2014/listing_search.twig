@@ -8,14 +8,15 @@
 
         <div class="l-content">
 
-        <div class="l-breadcrumbs">
-            {% include 'items/_item-breadcrumb.twig' %}
-        </div>
-
-        <div class="l-filter filters">
-            <div class="is-open-globalsearch">
+            <div class="l-breadcrumbs">
+                {% include 'items/_item-breadcrumb.twig' %}
+            </div>
+            
+            <div class="l-filter filters">
+                <div class="is-open-globalsearch">
                 <div class="search-global" style="background: none">
-                    <form id="search_inside" action="{{ paths.root }}search">
+
+                    <form id="search_inside" action="{{ paths.root }}search" data-cx="{{ cx }}" data-maxcompletions="{{ searchoptions.max_autocompletions }}" >
 
                         <fieldset>
                             <input type="text" placeholder="{{ query }}" name="q" id="search_google" value="{{ query }}">
@@ -27,127 +28,95 @@
                             </button>
                         </fieldset>
 
+
                         <fieldset>
-                            <h4 class="title">Include:</h4>
+                        <h4 class="title">Include:</h4>
                             <ul class="nav">
-                                {% for filter in filteroptions %}
-                                    <li><label for="checkbox_{{ filter }}">{{ filter|capitalize }} <input id="checkbox_{{ filter }}" name="{{ filter }}" type="checkbox" {{ searchoptions[(filter)] }}></label></li>
+                                {% for key,filter in filteroptions %}
+                                    <li>
+                                        <label for="checkbox_{{ key }}">{{ filteroptions[key].label }}<input id="checkbox_{{ key }}" name="{{ filteroptions[key].name }}" type="checkbox" {{ filteroptions[key].checked }}></label>
+                                    </li>
                                 {% endfor %}
+                                Sort by:
+                                <select name="sort">
+                                    <option value="">Relevance</option>
+                                    {% if sort == "date" %}
+                                        <option value="date" selected>Date</option>
+                                    {% else %}
+                                        <option value="date">Date</option>
+                                    {% endif %}
+                                </select>
+
                             </ul>
                         </fieldset>
 
-                    </form>
+                     
 
-                    <script type="text/javascript">
+
+                    </form>
+               
+
+                <script type="text/javascript">
+
+                    var $form = $('#search_inside'),
+                        $filters = $('input[type=checkbox], select', $form);
+
+                    $filters.change(function() {
+                        $form.submit();
+                    });
 
                     $(function() {
-
-                        var autoCompletionOptions = {
-                          'maxCompletions' : {{ searchoptions.max_autocompletions }},
+                        var $form = $('#search_inside');
+                        cx = $form.data('cx'),
+                        maxcompletions = $form.data('maxcompletions'),
+                        autoCompletionOptions = {
+                          'maxCompletions' : maxcompletions,
                           'styleOptions' : {
                             'xOffset' : 10
                         }};
+
                         google.setOnLoadCallback(function() {
-                          google.search.CustomSearchControl.attachAutoCompletionWithOptions(
-                            "{{ cx }}", document.getElementById('search_google'), 'search_inside',
-                            autoCompletionOptions);
+                            google.search.CustomSearchControl.attachAutoCompletionWithOptions(
+                                cx, 
+                                document.getElementById('search_google'), 
+                                'search_inside',
+                                autoCompletionOptions
+                            );
                         });
-
                     });
-                    </script>
+                </script>
 
                 </div>
-            </div>
-
-            {#
-                result number + query
-            #}
-            <div class="searchterms">
-                <h4>{{ resultsnum }} results for "{{ query }}"<h4>
-            </div>
-
-            {#
-                suggestion option
-            #}
-            {% if suggestion %}
-                <div class="searchterms">
-                    Did you mean "<a href="{{ paths.rooturl }}search?q={{ suggestion|striptags }}&{{ filteroptions|join('&') }}">{{ suggestion|striptags }}</a>"?
                 </div>
-            {% endif %}
 
-        </div>
-
-        {#
-            nothing found
-        #}
-        {% if searchresults is empty %}
-            <article class="maincontent">
-                <div class="textcontent">
-                    <div class="prose">
-                        <p>Unfortunately we haven't found what you are looking for, please check the spelling, or have a look at some content that may interest you.</p>
+                {# result number + query #}
+                {% if searchresults is not empty %}
+                    <div class="searchterms">
+                        <h4>{{ resultsnum }} results for "{{ query }}"<h4>
                     </div>
-                </div>
-                {#
-                {% include 'items/_item-related.twig' with {title: "You might also like:", short: true} %}
-                #}
-            </article>
+                {% endif %}
 
-        {% else %}
 
-            {#
-                render the search results
-            #}
-            <div class="maincontent">
-                <div class="results">
+                {% if suggestion %}
+                    <div class="searchterms">
+                        Did you mean "<a href="{{ paths.rooturl }}search?q={{ suggestion|striptags }}&{{ activeFilter|join('&') }}">{{ suggestion|striptags }}</a>"?
+                        <div class="resultsnum">Showing <strong>{{ resultsnum }}</strong> results for <strong>"{{ query }}"</strong></div>
+                    </div>
+                {% endif %}
 
-                    <ul class="results-list">
-                        {% for record in searchresults %}
-
-                            {#
-                                render bolt objects
-                            #}
-                            {% if record.values is defined %}
-                                {% if record.contenttype.name == 'Persons' %}
-                                    {% include 'items/_item-person-list.twig' with { record: record} %}
-                                {% else %}
-                                    {% include 'items/_item-list.twig' with { record: record } %}
-                                {% endif %}
-                            {#
-                                render "unknown" content
-                            #}
-                            {% else %}
-                                <li class="list-item">
-                                    <div class="item-supplementary">
-                                        {% if record.image %}
-                                        <div class="item-image">
-                                            <a href="{{ record.link|striptags }}"><img alt="{{ record.title|striptags }}" src="{{ record.image }}"></a>
-                                        </div>
-                                        {% endif %}
-                                    </div><!--
-                                 --><div class="item-details">
-                                        <h2 class="title"><a href="{{ record.link|striptags }}">{{ record.title|striptags }}</a></h2>
-                                        <div class="item-preview">
-                                            {{ record.snippet|raw }}
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-
-                    {% if pager is defined %}
-                        {% include '_sub_pager.twig' with { class: '', surr: 2, pager: pager } %}
-                    {% endif %}
-
-                </div>
             </div>
 
-        {% endif %}
 
-        </div><!--
+            {% if searchresults is empty %}
+                {% include 'listing_search_zeroresults.twig' %}
+            {% else %}
+                {% include 'listing_search_results.twig' %}
+            {% endif -%}
+    </div><!--
 
      --><div class="l-sidebar">
-
+            <div class="inner">
+			</div>
         </div>
     </div>
     <!-- End grid -->

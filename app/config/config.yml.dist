@@ -24,8 +24,11 @@ locale: en_GB
 # While in maintenance mode, only users of level editor or higher can access the site.
 # All other visitors are presented with a notice that the site is currently offline.
 # The default template file can be found in /app/theme_defaults/ and overridden with
-# this option using your own theme.
-maintenance_mode: false
+# this option using your own theme. Note: If you've changed the filename, and
+# your changes do not show up on the website, be sure to check for a config.yml
+# file in your theme's folder. If a template is set there, it will override the
+# setting here. 
+maintenance_mode: false 
 maintenance_template: maintenance_default.twig
 
 # The hour of the day for the internal cron task scheduler to run daily, weekly,
@@ -43,7 +46,10 @@ cron_hour: 3
 # want to set the icon yourself, just don't enable the following line.
 #favicon: images/favicon-bolt.ico
 
-# The default content to use for the homepage, and the template to render it with.
+# The default content to use for the homepage, and the template to render it
+# with. Note: If you've changed the filename, and your changes do not show up on
+# the website, be sure to check for a config.yml file in your theme's folder. If
+# a template is set there, it will override the setting here.
 homepage: page/1
 homepage_template: index.twig
 
@@ -57,26 +63,34 @@ notfound: page/not-found
 # Only valid when frontend_permission_checks is set to true
 #access_denied: page/not-logged-in
 
-# The default template and amount of records to use for listing-pages on the site.
-# Can be overridden for each contenttype, and for each record, if it has a
-# 'templateselect' field.
+# The default template and amount of records to use for listing-pages on the
+# site. Can be overridden for each contenttype and for each record, if it has a
+# 'templateselect' field. Note: If you've changed the filename, and your changes
+# do not show up on the website, be sure to check for a config.yml file in your
+# theme's folder. If a template is set there, it will override the setting here.
 record_template: record.twig
 
 # The default template and amount of records to use for listing-pages on the site.
 # Can be overridden for each contenttype.
 # Note: sorting on TAXONOMY-pages will give unexpected results, if it has a pager
 # If you need sorting on those, make sure you display all the records on one page.
+# Note: If you've changed the filename, and your changes do not show up on the
+# website, be sure to check for a config.yml file in your theme's folder. If a
+# template is set there, it will override the setting here.
 listing_template: listing.twig
 listing_records: 6
 listing_sort: datepublish DESC
 
-# Because of limitations on how the underlying database queries work, there are 
-# only two options for sorting on taxonomies. 'ASC' for roughly "oldest first" 
-# and 'DESC' for roughly 'newest first'. 
+# Because of limitations on how the underlying database queries work, there are
+# only two options for sorting on taxonomies. 'ASC' for roughly "oldest first"
+# and 'DESC' for roughly 'newest first'.
 taxonomy_sort: DESC
 
-# Template for showing the search results. If not defined, uses the settings
-# for listing_template and listing_records
+# Template for showing the search results. If not defined, uses the settings for
+# listing_template and listing_records. Note: If you've changed the filename,
+# and your changes do not show up on the website, be sure to check for a
+# config.yml file in your theme's folder. If a template is set there, it will
+# override the setting here.
 search_results_template: listing.twig
 search_results_records: 10
 
@@ -115,6 +129,8 @@ changelog:
 # default_thumbnail is the default size of images, when using {{ record.image|thumbnail() }}
 # default_image is the default size of images, when using {{ record.image|image() }}
 # allow_upscale determines whether small images will be enlarged to fit the requested dimensions.
+# browser_cache_time sets the amount of seconds that the browser will cache images for.
+# Set it to activate browser caching
 # Note: if you change these values, you might need to clear the cache before they show up.
 thumbnails:
   default_thumbnail: [ 160, 120 ]
@@ -125,6 +141,8 @@ thumbnails:
   error_image: view/img/default_error.png
   save_files: false
   allow_upscale: false
+  exif_orientation: true
+#  browser_cache_time: 2592000
 
 # File types that are acceptable for upload in either 'file' fields or through the 'files' screen.
 
@@ -178,19 +196,19 @@ wysiwyg:
   anchor: false
   tables: false
   fontcolor: false
-  align: false        # Add 'align left', 'align right',etc. 
+  align: false        # Add 'align left', 'align right',etc.
   subsuper: false     # Add buttons for subscript and superscript, using <sub> and <sup>
-  embed: false        # allows the user to insert embedded video's from Youtube, Vimeo, etc. 
+  embed: false        # allows the user to insert embedded video's from Youtube, Vimeo, etc.
   underline: false    # add a button to underline text, using the <u>-tag.
   strike: false       # add a button to add stikethrough, using the <s>-tag.
-  blockquote: false 
+  blockquote: false
   codesnippet: false
-  specialchar: false  # adds a button to insert special chars like '€' or '™'. 
+  specialchar: false  # adds a button to insert special chars like '€' or '™'.
   ck:
     allowedContent: true # If set to 'true', any elements and attributes are allowed in Wysiwg Elements
     autoParagraph: true # If set to 'true', any pasted content is wrapped in <p> tags for multiple line-breaks
     disableNativeSpellChecker: true # If set to 'true' it will stop browsers from underlining spelling mistakes
-    # viewSourceRoles: [ 'admin', 'developer' ] # the roles which are allowed to use the [Source]-button. 
+    # viewSourceRoles: [ 'admin', 'developer' ] # the roles which are allowed to use the [Source]-button.
 
 # by default, mail is sent using PHP's built-in mail function. In general, it's advised to use SMTP for sending mail
 # instead. Uncomment the following lines to use an SMTP server with authentication.
@@ -242,6 +260,17 @@ session_use_storage_handler: true
 # '12' is better.
 hash_strength: 10
 
+# Bolt uses extensions.bolt.cm to fetch it's extensions by default. You can change that URL here.
+# Do not change this, unless you know what you're doing, and understand the associated risks. If
+# you use 'http://extensions.bolt.cm', Bolt will not use SSL, increasing the risk for a MITM
+# attack.
+#
+# For the stability option, you can choose either 'dev' or 'stable'. Setting this to 'dev' will allow you to
+# install dev-master versions of extensions.
+extensions:
+  site: 'https://extensions.bolt.cm/'
+  stability: stable
+
 # Enforce SSL: if set, all but the front-end pages will enforce an SSL
 # connection (and redirect to HTTPS if you attempt to visit the backend over
 # plain HTTP).
@@ -276,7 +305,14 @@ hash_strength: 10
 #  password: pwd
 
 
-# options for when you're working with Grunt. Feel free to ignore these, if you don't use grunt.
-grunt:
-  livereload: false
-  livereloadport: 35729
+# Options for when you're working with Grunt.
+#grunt:
+#  livereload: false
+#  livereloadport: 35729
+
+# Options for backend user interface
+#backend:
+#  news:
+#    disable: true   # Disable news panel. Defaults to false
+#  stack:
+#    disable: true   # Disable stack usage. Defaults to false

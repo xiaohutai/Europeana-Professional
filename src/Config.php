@@ -8,6 +8,7 @@ use Bolt\Helpers\Arr;
 use Bolt\Helpers\String;
 use Bolt\Translation\Translator as Trans;
 use Symfony\Component\Yaml;
+use Symfony\Component\Yaml\Parser;
 
 /**
  * Class for our config object. Implemented as an extension of RecursiveArrayAccess
@@ -25,9 +26,11 @@ class Config
         'id', 'slug', 'datecreated', 'datechanged', 'datepublish', 'datedepublish', 'ownerid', 'username', 'status', 'link'
     );
 
+    private $cachetimestamp;
+
     public $fields;
 
-    private static $yamlParser;
+    private $yamlParser = false;
 
     /**
      * @param Application $app
@@ -41,7 +44,14 @@ class Config
             $this->saveCache();
 
             // if we have to reload the config, we will also want to make sure the DB integrity is checked.
-            Database\IntegrityChecker::invalidate();
+            Database\IntegrityChecker::invalidate($app);
+        } else {
+
+            // In this case the cache is loaded, but because the path of the theme
+            // folder is defined in the config file itself, we still need to check
+            // retrospectively if we need to invalidate it.
+            $this->checkValidCache();
+
         }
 
         $this->setTwigPath();
@@ -50,46 +60,36 @@ class Config
     }
 
     /**
-     * @param  string $basename
-     * @param  array  $default
-     * @param  mixed  $defaultConfigPath TRUE: use default config path
-     *                                   FALSE: just use the raw basename
-     *                                   string: use the given string as config
-     *                                   file path
+     * @param  string $filename The name of the YAML file to read
+     * @param  string $path     The (optional) path to the YAML file
      * @return array
      */
-    private function parseConfigYaml($basename, $default = array(), $defaultConfigPath = true)
+    private function parseConfigYaml($filename, $path = false)
     {
-        if (!self::$yamlParser) {
-            self::$yamlParser = new Yaml\Parser();
+        // Initialise parser
+        if ($this->yamlParser === false) {
+            $this->yamlParser = new Parser();
         }
 
-        if (is_string($defaultConfigPath)) {
-            $prefix = preg_replace('/\/+$/', '', $defaultConfigPath) . '/';
+        // By default we assume that config files are located in app/config/
+        if ($path) {
+            $filename = $path . '/' . $filename;
         } else {
-            if ($defaultConfigPath) {
-                $prefix = $this->app['resources']->getPath('config') . '/';
-            } else {
-                $prefix = '';
-            }
+            $filename = $this->app['resources']->getPath('config') . '/' . $filename;
         }
-
-        $filename = $prefix . $basename;
 
         if (is_readable($filename)) {
-            $yml = self::$yamlParser->parse(file_get_contents($filename) . "\n");
+            $yml = $this->yamlParser->parse(file_get_contents($filename) . "\n");
 
-            // To prevent an edge-case where an existing-but-empty .yml file returns
-            // something else (`NULL`) than a non-existing files (`array()`), we
-            // check the result instead of returning it blindly.
-            if (!empty($yml)) {
-                return $yml;
+            // Invalid, non-existing, or empty files return NULL
+            if (is_null($yml)) {
+                return array();
             } else {
-                return $default;
+                return $yml;
             }
+        } else {
+            return array();
         }
-
-        return $default;
     }
 
     /**
@@ -186,11 +186,9 @@ class Config
         $config['permissions'] = $this->parseConfigYaml('permissions.yml');
         $config['extensions']  = array();
 
-        // fetch the theme config. requires special treatment due to the path
+        // fetch the theme config. requires special treatment due to the path being dynamic
         $this->app['resources']->initializeConfig($config);
-        $paths = $this->app['resources']->getPaths();
-        $themeConfigFile = $paths['themepath'] . '/config.yml';
-        $config['theme'] = $this->parseConfigYaml($themeConfigFile, array(), false);
+        $config['theme'] = $this->parseConfigYaml('config.yml', $this->app['resources']->getPath('theme'));
 
         // @todo: If no config files can be found, get them from bolt.cm/files/default/
 
@@ -361,6 +359,18 @@ class Config
                     if (!is_array($temp['fields'][$key]['extensions'])) {
                         $temp['fields'][$key]['extensions'] = array($temp['fields'][$key]['extensions']);
                     }
+                }
+
+                // If field is a "Select" type, make sure the array is a "hash" (as opposed to a "map")
+                // For example: [ 'yes', 'no' ] => { 'yes': 'yes', 'no' }
+                // @see used hack: http://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
+                // The reason that we do this, is because if you set values to ['blue', 'green'], that is
+                // what you'd expect to see in the database. Not '0' and '1', which is what would happen,
+                // if we didn't "correct" it here. 
+                if ($temp['fields'][$key]['type'] == 'select' && is_array($temp['fields'][$key]['values']) && 
+                    array_values($temp['fields'][$key]['values']) === $temp['fields'][$key]['values'] ) {
+                    $temp['fields'][$key]['values'] = array_combine($temp['fields'][$key]['values'], $temp['fields'][$key]['values']);
+
                 }
 
                 // If the field has a 'group', make sure it's added to the 'groups' array, so we can turn
@@ -706,12 +716,12 @@ class Config
             file_exists($dir . '/config_local.yml') ? filemtime($dir . '/config_local.yml') : 0,
         );
         if (file_exists($this->app['resources']->getPath('cache') . '/config_cache.php')) {
-            $cachetimestamp = filemtime($this->app['resources']->getPath('cache') . '/config_cache.php');
+            $this->cachetimestamp = filemtime($this->app['resources']->getPath('cache') . '/config_cache.php');
         } else {
-            $cachetimestamp = 0;
+            $this->cachetimestamp = 0;
         }
 
-        if ($cachetimestamp > max($timestamps)) {
+        if ($this->cachetimestamp > max($timestamps)) {
             $this->data = Lib::loadSerialize($this->app['resources']->getPath('cache') . '/config_cache.php');
 
             // Check if we loaded actual data.
@@ -749,6 +759,21 @@ class Config
 
         @unlink($this->app['resources']->getPath('cache') . '/config_cache.php');
     }
+
+    private function checkValidCache()
+    {
+        // Check the timestamp for the theme's config.yml
+        $paths = $this->app['resources']->getPaths();
+        $themeConfigFile = $paths['themepath'] . '/config.yml';
+        // Note: we need to check if it exists, _and_ it's too old. Not _or_, hence the '0'
+        $configTimestamp = file_exists($themeConfigFile) ? filemtime($themeConfigFile) : 0;
+
+        if ($this->cachetimestamp <= $configTimestamp) {
+            // Invalidate cache for next request.
+            @unlink($paths['cache'] . '/config_cache.php');
+        }
+    }
+
 
     /**
      * Get an associative array with the correct options for the chosen database type.
@@ -867,6 +892,8 @@ class Config
     /**
      * Utility function to determine which 'end' we're using right now. Can be either "frontend", "backend", "async" or "cli".
      *
+     * NOTE: We retain the $_SERVER global here as this method can get called very early and the Request object might not exist yet
+     * 
      * @param  string $mountpoint
      * @return string
      */
@@ -895,11 +922,13 @@ class Config
             $scripturi = '/' . $scripturi;
         }
 
-        // If the request URI starts with '/bolt' or '/async' in the URL, we assume we're in the backend or in async.
-        if ((substr($scripturi, 0, strlen($mountpoint)) == $mountpoint)) {
-            $end = 'backend';
-        } elseif ((substr($scripturi, 0, 6) == 'async/') || (strpos($scripturi, '/async/') !== false)) {
+        // If the request URI is '/bolt' or '/async' (or starts with '/bolt/' etc.), assume backend or async.
+        $mountpoint = '/' . ltrim($mountpoint, '/');
+        if ((isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest')
+            || $scripturi === '/async' || strpos($scripturi, '/async/') === 0) {
             $end = 'async';
+        } elseif ($scripturi === $mountpoint || strpos($scripturi, $mountpoint . '/') === 0) {
+            $end = 'backend';
         } else {
             $end = 'frontend';
         }

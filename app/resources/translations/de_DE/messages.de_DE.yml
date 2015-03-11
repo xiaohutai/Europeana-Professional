@@ -1,21 +1,18 @@
-# app/resources/translations/de_DE/messages.de_DE.yml – generated on 2014-11-14 11:02:47 UTC
+# app/resources/translations/de_DE/messages.de_DE.yml – generated on 2014-11-18 11:27:00 UTC
 
 # Warning: Translations are in the process of being moved to a new keyword-based translation
-#          at the moment. This is an ongoing process. Translations currently in the 
-#          repository are automatically mapped to the new scheme. Be aware that there 
-#          can be a race condition between that process and your PR so that it's 
-#          eventually necessary to remap your translations. If you're planning on 
+#          at the moment. This is an ongoing process. Translations currently in the
+#          repository are automatically mapped to the new scheme. Be aware that there
+#          can be a race condition between that process and your PR so that it's
+#          eventually necessary to remap your translations. If you're planning on
 #          updating your translations, it's best to ask on IRC to time your contribution
 #          in order to prevent merge conflicts.
 
-#   5 unused messages
+#  no unused messages
 #  30 untranslated messages
 #  no untranslated keyword based messages
-# 332 translations
+# 331 translations
 # 132 keyword based translations
-
-#--- 5 unused messages --------------------------------------------------------
-
 
 #--- 30 untranslated messages -------------------------------------------------
 
@@ -50,7 +47,7 @@
 "[Extension error] Twig function registration failed for %ext%: %error%": #
 "[Extension error] YAML config failed to load for %ext%: %error%": #
 
-#--- 332 translations ---------------------------------------------------------
+#--- 331 translations ---------------------------------------------------------
 
 "%name% № %id%": "%name% Nr. %id%"
 "%s files could not be deleted. You should delete them manually.": " %s Dateien konnten nicht gelöscht werden. Bitte manuell löschen."
@@ -59,11 +56,11 @@
 "(no group)": "(keine Gruppe)"
 "(none)": "(nichts)"
 "A password reset link has been sent to '%user%'.": "Ein Link zum Zurücksetzen des Passworts wurde an %user% versandt."
-"About": "Über"
-"About Bolt": "Über Bolt"
+general.about: "Über"
+general.about-bolt: "Über Bolt"
 "Actions": "Aktionen"
-"Actions for Users": "Aktionen für Benutzer"
-"Activity log": "Aktivitätshistorie"
+users.actions-for-users: "Aktionen für Benutzer"
+logs.activity-log: "Aktivitätshistorie"
 "Add a brief, optional comment to describe what's changed.": "Optional: Kommentieren sie was sich geändert hat"
 "Add a comment:": "Einen Kommentar hinzufügen"
 "Add a new extension using the form below.": "Eine neue Erweiterung in dem Formular darunter hinzufügen."
@@ -81,8 +78,8 @@
 "Below are the third party libraries that are used by Bolt.": "Hier die Bibliotheken von Drittanbietern, welche Bolt verwendet."
 "Bolt - Fatal error.": "Bolt - Schwerwiegender Fehler"
 "Bolt Extension could not be found. Please check at %site% to ensure correct name.": "Die Bolt Erweiterung konnte nicht gefunden werden. Bitte prüfen sie auf %site% um den richtigen Namen sicherzustellen"
-"Bolt documentation on Github": "Bolt-Dokumentation auf Github (EN)"
-"Bolt on Github": "Bolt auf Github"
+general.bolt-documentation-on-github: "Bolt-Dokumentation auf Github (EN)"
+general.bolt-on-github: "Bolt auf Github"
 "Browse Versions": "Versionen anzeigen"
 "Browser / platform": "Browser / Plattform"
 "Built-in role, automatically granted at all times, even if no user is logged in": "Standard-Rolle, automatisch eingeräumt, selbst wenn kein Benutzer eingeloggt ist"
@@ -104,7 +101,7 @@
 "Check for updates": "Auf Aktualisierungen überprüfen"
 "Checking for available updates (this may take up to 60 seconds)": "Suche nach verfügbaren Aktualisierungen (Kann bis zu 60 Sekunden dauern)"
 "Checking installed packages": "Installierte Pakete prüfen"
-"Choose an entry": "Einen Eintrag auswählen"
+contenttypes.general.choose-an-entry: "Einen Eintrag auswählen"
 "Class:": "Klasse"
 "Clear Activitylog": "Aktivitätshistorie löschen"
 "Clear cache again": "Cache nochmals leeren"
@@ -156,7 +153,7 @@
 "Everything is up to date!": "Alles ist aktuell!"
 "Excerpt": "Auszug"
 "Expand sidebar": "Menü ausklappen"
-"Extend ": "Erweitern"
+"Extend %boltname%": "%boltname% erweitern"
 "Extension": "Erweiterung"
 "Extension log": "Erweiterungsprotokoll"
 "Extensions": "Erweiterungen"
@@ -261,7 +258,7 @@
 "Rename %foldername%": "%foldername% umbenennen"
 "Roles": "Rollen"
 "Roles and Permissions": "Rollen und Berechtigungen"
-"Routing setup": "Routing einrichten"
+menu.configuration.routing: "Routing einrichten"
 "Run all Updates": "Alle Aktualisierungen ausführen"
 "Run update check": "Auf Aktualisierungen prüfen"
 "Running install of all packages …": "Installation aller Pakete ausführen …"
@@ -296,7 +293,7 @@
 "Tag": "Tag"
 "Tags": "Tags"
 "Taxonomy": "Taxonomie"
-"Thanks": "Dank an"
+general.thanks: "Dank an"
 "That user does not exist.": "Der Benutzer ist nicht bekannt."
 "The activitylog has been cleared.": "Die Aktivitätshistorie wurde gelöscht."
 "The activitylog has been trimmed.": "Die Aktivitätshistorie wurde aufgeräumt."
@@ -351,7 +348,6 @@
 "Username or password not correct. Please check your input.": "Benutzername oder Passwort falsch. Bitte Eingabe überprüfen."
 "Users": "Benutzer"
 "Version": "Version"
-"Version:": "Version:"
 "View (saved version) on site": "(Gespeicherte Version) innerhalb der Webseite anzeigen"
 "View on site": "Auf der Site anzeigen"
 "View related content": "Verknüpfte Inhalte anzeigen"
@@ -373,7 +369,7 @@
 "Your account is disabled. Sorry about that.": "Ihr Accout wurde deaktiviert. Tut uns leid."
 "Your database is already up to date.": "Ihre Datenbank ist bereits aktuell."
 "Your database is now up to date.": "Ihre Datenbank ist nun wieder auf dem neusten Stand!"
-"Your password": "Ihr Passwort"
+users.your-password: "Ihr Passwort"
 "and edited": "und bearbeitet"
 "back to editing": "zurück zum Bearbeiten"
 "by": "von"

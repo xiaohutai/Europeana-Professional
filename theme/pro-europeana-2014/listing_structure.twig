@@ -33,10 +33,12 @@
 
 {% endif %}
 
+{# Note: listing for blog content is DEFINED IN listing.twig. See #223. #}
 
 {# listing for stucture with fixed content  #}
 {% if (record.content != '' and record.content != 'default' )  %}
-    {% setcontent records = record.content where { limit : amount, order : order, page : page }  %}
+
+    {% setcontent records = record.content where { limit : amount, order : order, page : page } allowpaging %}
 
 {# listing for mixed content (structure + contenttype) #}
 {% elseif contenttype %}
@@ -50,23 +52,27 @@
     #}
 
     {# get content for current structure #}
-    {% set recordsStruture = [] %}
+    {% set recordsStructure = [] %}
     {% if (order in record.values|keys) or ( order|slice(1,order|length) in record.values|keys ) %}
-        {% setcontent recordsStruture = 'Structures' where { tree : record.slug, order : order }  %}
+      {% setcontent recordsStructure = 'Structures' where { tree : record.slug, order : order }  %}
     {% endif %}
 
     {# get content assigned contenttype #}
-    {% setcontent records = contenttype['name'] where { tree : record.slug, order : order}  %}
+
+    {% setcontent records = contenttype['name'] where { limit: amount, tree : record.slug, order: order, page : page } allowpaging %}
 
     {# merge content #}
-    {% set records = records|merge(recordsStruture)|order(order) %}
+    {% set records = records|merge(recordsStructure)|order(order) %}
 
-    {# set pager properties. totalpages always round up #}
+    {# ------- Bob notes: I don't think we should manipulate pager here and/or slice the results.
+    Removing that here, fixes https://www.assembla.com/spaces/europeana-professional/tickets/160
+
+    {# set pager properties. totalpages always round up # }
     {% set pager = { totalpages :  (records|length/amount)|round(0, 'ceil'),  current : page }  %}
 
-    {# get items to display #}
+    {# get items to display # }
     {% set records = records|slice(amount*(page-1),amount) %}
-
+    ---- #}
 
 {# listing for structure content #}
 {% else %}
@@ -79,12 +85,19 @@
 
     {# for contenttype "Person" include listing_person #}
     {% if (records|length and records|first.contenttype.name == 'Persons') %}
-        {% set records = records|order('team') %}
+    
+        {% if app.request.get('slug')=='partners/' %}
+            {% set records = records|order('company') %}
+        {% else %}
+            {% set records = records|order('team') %}
+        {% endif %}
         {% include 'listing_person.twig' with {records: records } %}
 
     {# for the other content use the default listing #}
     {% else %}
-        {% include 'listing.twig' with {records: records} %}
+
+        {% include 'listing.twig' with { records: records } %}
+
     {% endif %}
 
 {% endif %}

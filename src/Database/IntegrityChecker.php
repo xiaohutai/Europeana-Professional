@@ -16,6 +16,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\TableDiff;
 
 use Bolt\Helpers\String;
+use Bolt\Application;
 
 class IntegrityChecker
 {
@@ -49,7 +50,7 @@ class IntegrityChecker
 
     public static $integrityCachePath;
 
-    public function __construct(\Bolt\Application $app)
+    public function __construct(Application $app)
     {
         $this->app = $app;
 
@@ -85,7 +86,7 @@ class IntegrityChecker
         return self::$integrityCachePath . '/' . self::INTEGRITY_CHECK_TS_FILENAME;
     }
 
-    public static function invalidate()
+    public static function invalidate(Application $app)
     {
         // delete the cached dbcheck-ts
         if (is_writable(self::getValidityTimestampFilename())) {
@@ -405,10 +406,10 @@ class IntegrityChecker
         $authtokenTable->addIndex(array('username'));
         $authtokenTable->addColumn('token', 'string', array('length' => 128));
         $authtokenTable->addColumn('salt', 'string', array('length' => 128));
-        $authtokenTable->addColumn('lastseen', 'datetime', array('default' => '1900-01-01 00:00:00'));
+        $authtokenTable->addColumn('lastseen', 'datetime', array('notnull' => false, 'default' => null));
         $authtokenTable->addColumn('ip', 'string', array('length' => 32, 'default' => ''));
         $authtokenTable->addColumn('useragent', 'string', array('length' => 128, 'default' => ''));
-        $authtokenTable->addColumn('validity', 'datetime', array('default' => '1900-01-01 00:00:00'));
+        $authtokenTable->addColumn('validity', 'datetime', array('notnull' => false, 'default' => null));
         $tables[] = $authtokenTable;
 
         $usersTable = $schema->createTable($this->prefix . 'users');
@@ -418,7 +419,7 @@ class IntegrityChecker
         $usersTable->addIndex(array('username'));
         $usersTable->addColumn('password', 'string', array('length' => 128));
         $usersTable->addColumn('email', 'string', array('length' => 128));
-        $usersTable->addColumn('lastseen', 'datetime');
+        $usersTable->addColumn('lastseen', 'datetime', array('notnull' => false, 'default' => null));
         $usersTable->addColumn('lastip', 'string', array('length' => 32, 'default' => ''));
         $usersTable->addColumn('displayname', 'string', array('length' => 32));
         $usersTable->addColumn('stack', 'string', array('length' => 1024, 'default' => ''));
@@ -426,9 +427,9 @@ class IntegrityChecker
         $usersTable->addIndex(array('enabled'));
         $usersTable->addColumn('shadowpassword', 'string', array('length' => 128, 'default' => ''));
         $usersTable->addColumn('shadowtoken', 'string', array('length' => 128, 'default' => ''));
-        $usersTable->addColumn('shadowvalidity', 'datetime', array('default' => '1900-01-01 00:00:00'));
+        $usersTable->addColumn('shadowvalidity', 'datetime', array('notnull' => false, 'default' => null));
         $usersTable->addColumn('failedlogins', 'integer', array('default' => 0));
-        $usersTable->addColumn('throttleduntil', 'datetime', array('default' => '1900-01-01 00:00:00'));
+        $usersTable->addColumn('throttleduntil', 'datetime', array('notnull' => false, 'default' => null));
         $usersTable->addColumn('roles', 'string', array('length' => 1024, 'default' => ''));
         $tables[] = $usersTable;
 
@@ -490,7 +491,7 @@ class IntegrityChecker
         $contentChangelogTable->addColumn("username", "string", array("length" => 64, "default" => "")); // To be deprecated, at sometime in the future.
         $contentChangelogTable->addIndex(array('username'));
         $contentChangelogTable->addColumn("ownerid", "integer", array("notnull" => false));
-        $contentChangelogTable->addIndex(array('username'));
+        $contentChangelogTable->addIndex(array('ownerid'));
 
         // the title as it was right before changing/deleting the item, or
         // right after creating it (according to getTitle())
@@ -549,9 +550,9 @@ class IntegrityChecker
             $myTable->addIndex(array('datecreated'));
             $myTable->addColumn("datechanged", "datetime");
             $myTable->addIndex(array('datechanged'));
-            $myTable->addColumn("datepublish", "datetime");
+            $myTable->addColumn("datepublish", "datetime", array("notnull" => false, 'default' => null));
             $myTable->addIndex(array('datepublish'));
-            $myTable->addColumn("datedepublish", "datetime", array("default" => "1900-01-01 00:00:00"));
+            $myTable->addColumn("datedepublish", "datetime", array('notnull' => false, 'default' => null));
             $myTable->addIndex(array('datedepublish'));
             $myTable->addColumn("username", "string", array("length" => 32, "default" => "", "notnull" => false)); // We need to keep this around for backward compatibility. For now.
             $myTable->addColumn("ownerid", "integer", array("notnull" => false));
@@ -609,6 +610,12 @@ class IntegrityChecker
                         $myTable->addColumn($field, "date", array("notnull" => false));
                         break;
                     case 'slug':
+                        // Only additional slug fields will be added. If it's the
+                        // default slug, skip it instead.
+                        if ($field != "slug") {
+                            $myTable->addColumn($field, "string", array("length" => 128, "notnull" => false, 'default' => ""));
+                        }
+                        break;
                     case 'id':
                     case 'datecreated':
                     case 'datechanged':

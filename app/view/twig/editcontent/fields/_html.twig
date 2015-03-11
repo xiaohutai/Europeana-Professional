@@ -5,19 +5,21 @@
     height:    field.height|default(''),
     label:     field.label|default(''),
     required:  field.required|default(false),
+    errortext: field.error|default(''),
     info:      field.info|default(''),
     options:   field.options.ckeditor|default('')
-}%}
+} %}
 
 {#=== INIT ===========================================================================================================#}
 
 {% set attr_html = {
-    class:               option.class~' ckeditor',
+    class:               option.class ~ ' ckeditor',
     data_field_options:  option.options ? option.options|json_encode : '',
     name:                key,
     required:            option.required,
-    style:               (option.height) ? 'height: '~option.height : '',
-}%}
+    data_errortext:      option.errortext,
+    style:               (option.height) ? 'height: ' ~ option.height : '',
+} %}
 
 {#=== FIELDSET =======================================================================================================#}
 

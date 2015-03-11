@@ -27,17 +27,27 @@
                 <div class="section contact-detail">
                     <div class="l-contact-photo">
                         <img src="{{ record.image|image(300,400) }}" alt="{{ record.first_name }} {{ record.last_name }}" class="photo" />
-                    </div>
-                    <div class="l-contact">
+                    </div><!--
+                    --><div class="l-contact">
                         <div class="contact-methods cf">
                             <h2 class="fn">{{record.first_name}} {{record.last_name}}</h2>
-                            <div class="contact-internal">
-                                <div class="jobdetails">
-                                    <div class="job-title">{{record.job_title}}</div>
-                                    <div class="job-department">{{record.team}}</div>
+
+                            <div class="jobdetails">
+                                <div class="job-title">{{record.job_title}}</div>
+
+                                <div class="job-department">
+                                    {% if record.team != '(not set)' %}
+                                        {{record.team}}
+                                    {% else %}
+                                        {{ record.company }}
+                                    {% endif %}
                                 </div>
 
+
                                 <a class="email" href="mailto:{{ record.email }}">{{record.email}}</a>
+                            </div>
+
+                            <div class="contact-internal">
 
                                 {% if record.telephone_number != '' %}
                                 <div class="item-phone-work">

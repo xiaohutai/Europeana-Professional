@@ -82,7 +82,7 @@ publications:
       label: "Teaser:"
       height: 150px
     introduction:
-      type: html
+      type: text
       required: false
       label: "Introduction (120 chars MAX):"
       pattern: "^.{1,120}$"
@@ -197,7 +197,7 @@ pressreleases:
       type: slug
       uses: title
     introduction:
-      type: html
+      type: markdown
       required: false
       label: "Introduction (120 chars MAX):"
       pattern: "^.{1,120}$"
@@ -340,7 +340,18 @@ persons:
       type: select
       required: false
       label: "Team:"
-      values: [ "(not set)", "Aggregation", "Corporate Communication", "Distribution & Engagement", "Facilitation", "Management", "Network & Sustainability", "People & Business Support", "Product Development", "Technology" ]
+      values:
+        "(not set)": "(not set)"
+        "Aggregation": "Data Partner Services"
+        "Corporate Communication": "Communications"
+        "Distribution & Engagement": "End User Services"
+        "Facilitation": "Policy, Research, Knowledge & Programme Management"
+        "Management": "Management"
+        "Network & Sustainability": "Network & Sustainability"
+        "People & Business Support": "People & Business Support"
+        "Product Development": "Product Development"
+        "Technology": "Technology"
+        "Re-use Services": "Re-use Services"
     introduction:
       type: html
       required: false
@@ -776,8 +787,8 @@ blogposts:
       required: true
       label: "Title (required):"
       variant: inline
-      postfix: "(max. 50 characters)"
-      pattern: "^.{1,50}$"
+      postfix: "(max. 200 characters)"
+      pattern: "^.{1,200}$"
       group: "Blog post"
     slug:
       type: slug
@@ -860,9 +871,8 @@ blogposts:
       label: "Jobs"
       order: -id
       format: "{{ item.title|escape }}"
-  sort: -datepublish
   record_template: record_blogpost.twig
-
+  recordsperpage: 100
 
 
 #################################
@@ -888,6 +898,11 @@ blogposts:
 # - Where do the contact persons come from? From contenttype person?
 # - Is it possible to define the max amount of choosen entries from the contenttype select, multiple: true? Example: max choose two entries
 # - How will be the exact handling of type support_navigation?
+#   > Currently implemented as a markdown field. This could just as well be an
+#     HTML field; neither is a particularly excellent solution, but the
+#     alternative would be to add yet another contenttype, and a relation - way
+#     too complex.
+#     The field should contain a sequence of list items 
 # - Should related content be shown on the contenttype (shown in prototype demo.deanbirkett but not in excel docs.google.com)?
 #
 #################################
@@ -1329,9 +1344,8 @@ taskforces:
       label: "Jobs"
       order: -id
       format: "{{ item.title|escape }}"
-  sort: date_end
   record_template: record_taskforce.twig
-
+  recordsperpage: 1000
 
 
 #################################
@@ -1450,6 +1464,26 @@ homepage:
       extensions: [ gif, jpg, png ]
       required: true
       label: "Banner Image (required):"
+    imageattribution:
+      label: Image Attribution
+      type: text
+    imagelicense:
+      label: Image License
+      type: select
+      values: [ 'CC0', 'CC-BY', 'CC-BY-SA', 'CC-BY-NC', 'CC-BY-NC-SA', 'Public Domain' ]
+    brandcolour:
+      label: Color of graphic
+      type: select
+      values: { brand-colour-site : "Europeana red", brand-colour-white : "White", brand-colour-black : "Black" }
+    brandopacity:
+      label: Transparency of graphic
+      type: select
+      values: { brand-opacity25 : "25 percent", brand-opacity50 : "50 percent", brand-opacity75 : "75 percent", brand-opacity100 : "Not transparent" }
+    brandlocation:
+      label: Location of graphic
+      type: select
+      values: { brand-topleft : "Top left", brand-topright  : "Top right", brand-bottomleft  : "Bottom left", brand-bottomright : "Bottom right"  }
+
     bannertext:
       type: html
       required: true
@@ -1572,4 +1606,3 @@ footers:
       label: "Location:"
       multiple: false
   viewless: true
-
