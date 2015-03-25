@@ -67,7 +67,7 @@
                 {% if (contenttype.slug in ['blogposts', 'events', 'publications', 'pressreleases']) %}
                 <div class="item-rss">
                     <a href="/{{contenttype.slug}}/rss/feed.xml">
-                        <svg class="icon icon-rss"><use xlink:href="#icon-rss"></use></svg> 
+                        <svg class="icon icon-rss"><use xlink:href="#icon-rss"></use></svg>
                         RSS feed
                     </a>
                 </div>
@@ -107,11 +107,22 @@
                         {% endif %}
                     {% endif %}
 
+                    {% if contenttype['slug'] == "events" or contenttype == 'Events' %}
+                        {% if order == '-end_event' %}
+                            <h1>Past events</h1>
+                            {% set end_event = '< today' %}
+                        {% else %}
+                            <h1>Upcoming events</h1>
+                            {% set end_event = '> today' %}
+                        {% endif %}
+
+                        {% setcontent records = 'events' where { limit: 6, order: order, page: page, 'end_event': end_event } allowpaging %}
+                    {% endif %}
 
                     {% for listItem in records %}
                         {% include 'items/_item-list.twig' with { record: listItem } %}
                     {% endfor %}
-                    
+
                 </ul>
 
                 {% if pager is defined or taxonomy is defined %}
