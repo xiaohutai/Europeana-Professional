@@ -96,22 +96,27 @@
 
     <ul class="results-list">
     {# Bob notes: see related ticket #196, #198, #223.. What was patrick thinking when he made this?
-        Just grab the blog-postings again on this page.. #}
+        Just grab the blog-postings again on this page..
+        Xiao: Need to refactor everything with record.taxonomy.tree, this doesn't exist anymore since
+              refactoring to Relationships, which are now `structure_parent` fields.
+        #}
     {% if showsortby and taxonomy is not defined and contenttype.slug == "blogposts" %}
-        {% if "Europeana Cloud" in record.taxonomy.tree %}
 
-        {# Europeana Cloud blog posts. #}
-        {% setcontent records = record.content where { limit : amount, order : order, page : page, tree: "Europeana Cloud Blog" } allowpaging %}
+        {# ---
+           structures/24 is Europeana Cloud Blog
+           structures/28 is Europeana Creative Blog
+           -- #}
+        {% set europeanaCloud = 28 %}
+        {% set europeanaCreative = 24 %}
+        {% if record.contenttype.slug == 'structures' and record.id in [europeanaCloud, europeanaCreative] %}
 
-        {% elseif "Europeana Creative" in record.taxonomy.tree %}
-
-        {# Europeana Cloud blog posts. #}
-        {% setcontent records = record.content where { limit : amount, order : order, page : page, tree: "Europeana Creative Blog" } allowpaging %}
+        {# fetch Europeana Cloud or Europeana Creative blog posts. #}
+        {% setcontent records = record.content where { limit : amount, order : order, page : page, structure_parent: record.id } allowpaging %}
 
         {% else %}
 
-        {# all blog posts. #}
-        {% setcontent records = 'BlogPosts' where { limit : amount, order : order, page : page } allowpaging %}
+        {# all blog posts, but not the ones in Cloud or Creative #}
+        {% setcontent records = 'BlogPosts' where { limit : amount, order : order, page : page, structure_parent: '!'~europeanaCloud~' && !'~europeanaCreative } allowpaging %}
 
         {% endif %}
     {% endif %}
