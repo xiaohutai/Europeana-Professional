@@ -17,6 +17,9 @@
 
 {% if app.request.get('order') %}
     {% set records = records|order(app.request.get('order')) %}
+{% elseif records|first.contenttype.slug == 'taskforces' %}
+    {# manual override ordering #}
+    {% set records = records|order('-date_start', '-date_end') %}
 {% else %}
     {% set records = records|order('structure_sortorder', '-datepublish') %}
 {% endif %}

@@ -46,6 +46,11 @@
 {% if (record.content != '' and record.content != 'default' )  %}
     {% setcontent records = record.content where { limit : amount, order : order, page : page } allowpaging %}
 
+    {# manual override ordering #}
+    {% if record.content == 'TaskForces' %}
+        {% set records = records|order('-date_start', '-date_end') %}
+    {% endif %}
+
 {# listing for mixed content (structure + contenttype) #}
 {% elseif contenttype %}
     {#
